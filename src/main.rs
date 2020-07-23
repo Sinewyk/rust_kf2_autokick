@@ -1,3 +1,10 @@
+use std::env;
+
+mod config;
+
+use config::Config;
+
 fn main() {
-	println!("Hello, world!");
+	let args: Vec<String> = env::args().collect();
+	let config = Config::new(&args).unwrap();
 }
