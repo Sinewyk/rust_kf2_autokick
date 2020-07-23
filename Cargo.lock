@@ -3,3 +3,12 @@
 [[package]]
 name = "rust_kf2_autokick"
 version = "0.1.0"
+dependencies = [
+ "tinyjson",
+]
+
+[[package]]
+name = "tinyjson"
+version = "2.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "53c76489afcdd3a2c348e0484922c8c3df380bfc8d3fa20f1d2250751c9eb75a"

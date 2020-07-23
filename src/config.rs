@@ -1,3 +1,6 @@
+use std::fs;
+use tinyjson::JsonValue;
+
 enum Perks {
 	Berserker,
 	Survivalist,
@@ -18,7 +21,7 @@ enum Actions {
 	BanId,
 }
 
-struct ServerConfig {
+pub struct ServerConfig {
 	basicAuthorization: String,
 	intervalCheck: usize,
 	action: Actions,
@@ -30,16 +33,18 @@ struct ServerConfig {
 	log: bool,
 }
 
-pub struct Config {
-	servers: Vec<ServerConfig>,
-}
+pub type Config = Vec<ServerConfig>;
 
-impl Config {
-	pub fn new(args: &[String]) -> Result<Self, &'static str> {
-		if args.len() != 2 {
-			return Err("You must only provide a path to the config file");
-		}
-
-		Ok(Config { servers: vec![] })
+pub fn get_config(args: &[String]) -> Result<Config, &'static str> {
+	if args.len() != 2 {
+		return Err("You must only provide a path to the config file");
 	}
+
+	let path = &args[1];
+
+	let parsed: JsonValue = fs::read_to_string(path).unwrap().parse().unwrap();
+
+	print!("{:?}", parsed);
+
+	Ok(vec![])
 }
