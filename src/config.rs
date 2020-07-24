@@ -1,6 +1,22 @@
 use std::fs;
 use tinyjson::JsonValue;
 
+struct JsonParseError {}
+
+impl std::fmt::Display for JsonParseError {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		f.debug_struct("JsonParseError").finish()
+	}
+}
+
+impl std::fmt::Debug for JsonParseError {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		write!(f, "JsonParseError")
+	}
+}
+
+impl std::error::Error for JsonParseError {}
+
 enum Perks {
 	Berserker,
 	Survivalist,
@@ -44,7 +60,7 @@ pub fn get_config(args: &[String]) -> Result<Config, &'static str> {
 
 	let parsed: JsonValue = fs::read_to_string(path).unwrap().parse().unwrap();
 
-	print!("{:?}", parsed);
+	// print!("{:?}", parsed);
 
 	Ok(vec![])
 }
