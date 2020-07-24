@@ -9,7 +9,7 @@ fn main() {
 	let config = match config::get_config(&args) {
 		Ok(config) => config,
 		Err(e) => {
-			eprint!("Error: {}", e);
+			eprint!("Error: {}\n", e);
 			exit(1);
 		}
 	};

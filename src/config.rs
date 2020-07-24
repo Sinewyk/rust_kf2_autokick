@@ -1,21 +1,6 @@
+use anyhow::{anyhow, Error};
 use std::fs;
 use tinyjson::JsonValue;
-
-struct JsonParseError {}
-
-impl std::fmt::Display for JsonParseError {
-	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		f.debug_struct("JsonParseError").finish()
-	}
-}
-
-impl std::fmt::Debug for JsonParseError {
-	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		write!(f, "JsonParseError")
-	}
-}
-
-impl std::error::Error for JsonParseError {}
 
 enum Perks {
 	Berserker,
@@ -51,14 +36,16 @@ pub struct ServerConfig {
 
 pub type Config = Vec<ServerConfig>;
 
-pub fn get_config(args: &[String]) -> Result<Config, &'static str> {
+pub fn get_config(args: &[String]) -> Result<Config, Error> {
 	if args.len() != 2 {
-		return Err("You must only provide a path to the config file");
+		return Err(anyhow!("You must only provide a path to the config file"));
 	}
 
 	let path = &args[1];
 
-	let parsed: JsonValue = fs::read_to_string(path).unwrap().parse().unwrap();
+	let parsed: JsonValue = fs::read_to_string(path)?
+		.parse()
+		.or_else(|e: tinyjson::JsonParseError| Err(anyhow!(e)))?;
 
 	// print!("{:?}", parsed);
 

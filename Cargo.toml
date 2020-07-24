@@ -8,3 +8,4 @@ edition = "2018"
 
 [dependencies]
 tinyjson = "2"
+anyhow = "1.0"
