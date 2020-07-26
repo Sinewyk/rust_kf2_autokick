@@ -1,53 +1,49 @@
 use anyhow::{anyhow, Error};
+use serde::Deserialize;
 use std::fs;
-use tinyjson::JsonValue;
 
-enum Perks {
-	Berserker,
-	Survivalist,
-	Commando,
-	Support,
-	FieldMedic,
-	Demolitionist,
-	Firebug,
-	Gunslinger,
-	Sharpshooter,
-	SWAT,
-}
+// enum Perks {
+// 	Berserker,
+// 	Survivalist,
+// 	Commando,
+// 	Support,
+// 	FieldMedic,
+// 	Demolitionist,
+// 	Firebug,
+// 	Gunslinger,
+// 	Sharpshooter,
+// 	SWAT,
+// }
 
-enum Actions {
-	Kick,
-	SessionBan,
-	BanIp,
-	BanId,
-}
+// enum Actions {
+// 	Kick,
+// 	SessionBan,
+// 	BanIp,
+// 	BanId,
+// }
 
+#[derive(Deserialize, Debug)]
 pub struct ServerConfig {
-	basicAuthorization: String,
-	intervalCheck: usize,
-	action: Actions,
-	minLevel: usize,
-	warnings: bool,
-	warningMessage: String,
-	warningPeriod: usize,
-	removePerks: Vec<Perks>,
-	log: bool,
+	address: String,
+	basic_authorization: Option<String>,
+	interval_check: Option<usize>,
+	action: Option<String>,
+	minimum_level: Option<usize>,
+	warnings: Option<bool>,
+	warning_message: Option<String>,
+	warning_period: Option<usize>,
+	remove_perks: Option<Vec<String>>,
+	log: Option<bool>,
 }
 
-pub type Config = Vec<ServerConfig>;
-
-pub fn get_config(args: &[String]) -> Result<Config, Error> {
+pub fn get_config(args: &[String]) -> Result<ServerConfig, Error> {
 	if args.len() != 2 {
 		return Err(anyhow!("You must only provide a path to the config file"));
 	}
 
 	let path = &args[1];
 
-	let parsed: JsonValue = fs::read_to_string(path)?
-		.parse()
-		.or_else(|e: tinyjson::JsonParseError| Err(anyhow!(e)))?;
+	let parsed = serde_json::from_str(&fs::read_to_string(path)?)?;
 
-	// print!("{:?}", parsed);
-
-	Ok(vec![])
+	Ok(parsed)
 }

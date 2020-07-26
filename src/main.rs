@@ -13,4 +13,6 @@ fn main() {
 			exit(1);
 		}
 	};
+
+	print!("ok: {:?}", config);
 }
