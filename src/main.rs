@@ -14,5 +14,5 @@ fn main() {
 		}
 	};
 
-	print!("ok: {:?}", config);
+	print!("Config: {:?}", config);
 }

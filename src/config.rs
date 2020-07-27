@@ -43,7 +43,5 @@ pub fn get_config(args: &[String]) -> Result<ServerConfig, Error> {
 
 	let path = &args[1];
 
-	let parsed = serde_json::from_str(&fs::read_to_string(path)?)?;
-
-	Ok(parsed)
+	Ok(serde_json::from_str(&fs::read_to_string(path)?)?)
 }
