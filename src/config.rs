@@ -24,16 +24,16 @@ use std::fs;
 
 #[derive(Deserialize, Debug)]
 pub struct ServerConfig {
-	address: String,
-	basic_authorization: Option<String>,
-	interval_check: Option<usize>,
-	action: Option<String>,
-	minimum_level: Option<usize>,
-	warnings: Option<bool>,
-	warning_message: Option<String>,
-	warning_period: Option<usize>,
-	remove_perks: Option<Vec<String>>,
-	log: Option<bool>,
+	pub address: String,
+	pub basic_authorization: Option<String>,
+	pub interval_check: Option<usize>,
+	pub action: Option<String>,
+	pub minimum_level: Option<usize>,
+	pub warnings: Option<bool>,
+	pub warning_message: Option<String>,
+	pub warning_period: Option<usize>,
+	pub remove_perks: Option<Vec<String>>,
+	pub log: Option<bool>,
 }
 
 pub fn get_config(args: &[String]) -> Result<ServerConfig, Error> {
