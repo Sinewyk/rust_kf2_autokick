@@ -1,18 +1,14 @@
+use anyhow::Error;
 use std::env;
-use std::process::exit;
 
 mod config;
 
-fn main() {
+fn main() -> Result<(), Error> {
 	let args: Vec<String> = env::args().collect();
 
-	let config = match config::get_config(&args) {
-		Ok(config) => config,
-		Err(e) => {
-			eprint!("Error: {}\n", e);
-			exit(1);
-		}
-	};
+	let config = config::get_config(&args)?;
 
 	print!("Config: {:?}", config);
+
+	Ok(())
 }
