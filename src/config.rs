@@ -25,7 +25,7 @@ use std::fs;
 #[derive(Deserialize, Debug)]
 pub struct ServerConfig {
 	pub address: String,
-	pub basic_authorization: Option<String>,
+	pub basic_authorization: Option<(String, String)>,
 	pub interval_check: Option<usize>,
 	pub action: Option<String>,
 	pub minimum_level: Option<usize>,
