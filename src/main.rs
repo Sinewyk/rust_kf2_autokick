@@ -1,8 +1,8 @@
 use anyhow::Error;
-use reqwest::Client;
 use std::env;
 use std::time::Instant;
 
+mod api;
 mod config;
 
 #[tokio::main]
@@ -11,19 +11,13 @@ async fn main() -> Result<(), Error> {
 
 	let config = config::get_config(&args)?;
 
-	// print!("Config: {:?}\n", config);
-
-	let client = Client::new();
-
-	let mut req = client.get(&format!("{}/ServerAdmin/current/players", &config.address));
-
-	if let Some(basic_auth) = config.basic_authorization {
-		req = req.basic_auth(&basic_auth.0, Some(&basic_auth.1));
-	}
-
 	let now = Instant::now();
-	let resp = req.send().await?.text().await?;
+	let resp = api::fetch_infos(&config).await?;
 
 	println!("{}", now.elapsed().as_millis());
+	// println!("{}", resp);
+
+	todo!("implement loop, push server state into vector up to #, implement diff to do stuff");
+
 	Ok(())
 }
