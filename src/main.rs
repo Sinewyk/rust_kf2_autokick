@@ -12,10 +12,10 @@ async fn main() -> Result<(), Error> {
 	let config = config::get_config(&args)?;
 
 	let now = Instant::now();
-	let resp = api::fetch_infos(&config).await?;
+	let last_state = api::fetch_infos(&config).await?;
 
 	println!("{}", now.elapsed().as_millis());
-	// println!("{}", resp);
+	println!("{:?}", last_state);
 
 	todo!("implement loop, push server state into vector up to #, implement diff to do stuff");
 
