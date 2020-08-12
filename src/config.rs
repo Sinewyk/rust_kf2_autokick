@@ -22,7 +22,7 @@ use std::fs;
 // 	BanId,
 // }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize)]
 pub struct ServerConfig {
 	pub address: String,
 	pub basic_authorization: Option<(String, String)>,
