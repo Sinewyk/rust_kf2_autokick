@@ -4,23 +4,7 @@ use crate::config::ServerConfig;
 use anyhow::Result;
 use html_extractor::{html_extractor, HtmlExtractor};
 use reqwest::Client;
-use serde::Deserialize;
 use std::time::Instant;
-
-#[derive(Debug, Deserialize)]
-struct PlayerRead {
-	name: String,
-	key: String,
-	perk: String,
-	level: String,
-	health: String,
-	dosh: String,
-	kills: String,
-	admin: String,
-	spectator: String,
-	ping: String,
-	packetloss: String,
-}
 
 #[derive(Debug)]
 struct Player {
@@ -43,59 +27,45 @@ pub struct ServerState {
 	players: Vec<Player>,
 }
 
-#[derive(Debug, Deserialize)]
-struct GameStateRead {
-	map: String,
-	time_elapsed: usize,
-	time_limit: usize,
-	wave: usize,
-	monsters_dead: usize,
-	monsters_total: usize,
-}
-
 html_extractor! {
 	#[derive(Debug, PartialEq)]
-	As_Json {
-		game: String = (text of ".game_info"),
-		players: Vec<String> = (text of ".player", collect)
+	RawExtractGlobal {
+		game_map: String = (inner_html of ".game_map"),
+		game_time_elapsed: usize = (inner_html of ".game_time_elapsed"),
+		game_time_limit: usize = (inner_html of ".game_time_limit"),
+		game_time_remaining: usize = (inner_html of ".game_time_remaining"),
+		game_wave: usize = (inner_html of ".game_wave"),
+		game_wave_max: usize = (inner_html of ".game_wave_max"),
+		game_monsters_dead: usize = (inner_html of ".game_monsters_dead"),
+		game_monsters_pending: usize = (inner_html of ".game_monsters_pending"),
+		game_monsters_total: usize = (inner_html of ".game_monsters_total"),
+		players: Vec<RawExtractPlayer> = (elem of ".player_data", collect)
+	}
+	#[derive(Debug, PartialEq)]
+	RawExtractPlayer {
+		player_name: String = (inner_html of ".player_name"),
+		player_key: String = (inner_html of ".player_key"),
+		player_starttime: String = (inner_html of ".player_starttime"),
+		player_perk_class: String = (inner_html of ".player_perk_class"),
+		player_perk_level: String = (inner_html of ".player_perk_level"),
+		player_health: String = (inner_html of ".player_health"),
+		player_health_max: String = (inner_html of ".player_health_max"),
+		player_dosh: String = (inner_html of ".player_dosh"),
+		player_kills: String = (inner_html of ".player_kills"),
+		player_deaths: String = (inner_html of ".player_deaths"),
+		player_lives: String = (inner_html of ".player_lives"),
+		player_admin: String = (inner_html of ".player_admin"),
+		player_spectator: String = (inner_html of ".player_spectator"),
+		player_ping: String = (inner_html of ".player_ping"),
+		player_packetloss: String = (inner_html of ".player_packetloss"),
 	}
 }
 
 fn parse(response: String) -> Result<ServerState> {
-	let foo = As_Json::extract_from_str(&response)?;
-	println!("{:?}", foo);
-	let ssr: GameStateRead = serde_json::from_str(&foo.game)?;
-	println!("{:?}", ssr);
-	let psr: Vec<PlayerRead> = foo
-		.players
-		.iter()
-		.map(|x| serde_json::from_str(&x).unwrap())
-		.collect();
-	println!("{:?}", psr);
+	let raw_state: RawExtractGlobal = RawExtractGlobal::extract_from_str(&response)?;
+	println!("{:#?}", raw_state);
 
-	Ok(ServerState {
-		timestamp: Instant::now(),
-		players: psr
-			.iter()
-			.map(move |player| Player {
-				name: player.name.clone(),
-				key: player.key.clone(),
-				perk: player.perk.clone(),
-				level: player.level.parse::<usize>().unwrap(),
-				health: player.health.parse::<usize>().unwrap(),
-				dosh: player.dosh.parse::<usize>().unwrap(),
-				kills: player.kills.parse::<usize>().unwrap(),
-				admin: if player.admin == "No" { false } else { true },
-				spectator: if player.spectator == "No" {
-					false
-				} else {
-					true
-				},
-				ping: player.ping.parse::<usize>().unwrap(),
-				packetloss: player.packetloss.clone(),
-			})
-			.collect(),
-	})
+	todo!("finish parsing state")
 }
 
 pub async fn fetch_infos(config: &ServerConfig) -> Result<ServerState> {

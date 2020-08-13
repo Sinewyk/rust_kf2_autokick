@@ -17,7 +17,5 @@ async fn main() -> Result<(), Error> {
 	println!("{}", now.elapsed().as_millis());
 	println!("{:?}", last_state);
 
-	todo!("implement loop, push server state into vector up to #, implement diff to do stuff");
-
 	Ok(())
 }
