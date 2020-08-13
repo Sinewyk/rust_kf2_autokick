@@ -13,59 +13,103 @@ struct Player {
 	perk: String,
 	level: usize,
 	health: usize,
+	health_max: usize,
 	dosh: usize,
 	kills: usize,
 	admin: bool,
 	spectator: bool,
 	ping: usize,
 	packetloss: String,
+	starttime: usize,
+	deaths: usize,
 }
 
 #[derive(Debug)]
 pub struct ServerState {
 	timestamp: Instant,
+	map: String,
+	time_elapsed: usize,
+	time_remaining: usize,
+	wave: usize,
+	wave_max: usize,
+	monsters_total: usize,
+	monsters_dead: isize,
+	monsters_pending: isize,
 	players: Vec<Player>,
 }
 
 html_extractor! {
-	#[derive(Debug, PartialEq)]
 	RawExtractGlobal {
-		game_map: String = (inner_html of ".game_map"),
-		game_time_elapsed: usize = (inner_html of ".game_time_elapsed"),
-		game_time_limit: usize = (inner_html of ".game_time_limit"),
-		game_time_remaining: usize = (inner_html of ".game_time_remaining"),
-		game_wave: usize = (inner_html of ".game_wave"),
-		game_wave_max: usize = (inner_html of ".game_wave_max"),
-		game_monsters_dead: usize = (inner_html of ".game_monsters_dead"),
-		game_monsters_pending: usize = (inner_html of ".game_monsters_pending"),
-		game_monsters_total: usize = (inner_html of ".game_monsters_total"),
+		map: String = (inner_html of ".game_map"),
+		time_elapsed: usize = (inner_html of ".game_time_elapsed"),
+		time_remaining: usize = (inner_html of ".game_time_remaining"),
+		wave: usize = (inner_html of ".game_wave"),
+		wave_max: usize = (inner_html of ".game_wave_max"),
+		monsters_dead: isize = (inner_html of ".game_monsters_dead"),
+		monsters_pending: isize = (inner_html of ".game_monsters_pending"),
+		monsters_total: usize = (inner_html of ".game_monsters_total"),
 		players: Vec<RawExtractPlayer> = (elem of ".player_data", collect)
 	}
-	#[derive(Debug, PartialEq)]
 	RawExtractPlayer {
-		player_name: String = (inner_html of ".player_name"),
-		player_key: String = (inner_html of ".player_key"),
-		player_starttime: String = (inner_html of ".player_starttime"),
-		player_perk_class: String = (inner_html of ".player_perk_class"),
-		player_perk_level: String = (inner_html of ".player_perk_level"),
-		player_health: String = (inner_html of ".player_health"),
-		player_health_max: String = (inner_html of ".player_health_max"),
-		player_dosh: String = (inner_html of ".player_dosh"),
-		player_kills: String = (inner_html of ".player_kills"),
-		player_deaths: String = (inner_html of ".player_deaths"),
-		player_lives: String = (inner_html of ".player_lives"),
-		player_admin: String = (inner_html of ".player_admin"),
-		player_spectator: String = (inner_html of ".player_spectator"),
-		player_ping: String = (inner_html of ".player_ping"),
-		player_packetloss: String = (inner_html of ".player_packetloss"),
+		name: String = (inner_html of ".player_name"),
+		key: String = (inner_html of ".player_key"),
+		starttime: String = (inner_html of ".player_starttime"),
+		perk: String = (inner_html of ".player_perk_class"),
+		level: String = (inner_html of ".player_perk_level"),
+		health: String = (inner_html of ".player_health"),
+		health_max: String = (inner_html of ".player_health_max"),
+		dosh: String = (inner_html of ".player_dosh"),
+		kills: String = (inner_html of ".player_kills"),
+		deaths: String = (inner_html of ".player_deaths"),
+		admin: String = (inner_html of ".player_admin"),
+		spectator: String = (inner_html of ".player_spectator"),
+		ping: String = (inner_html of ".player_ping"),
+		packetloss: String = (inner_html of ".player_packetloss"),
 	}
 }
 
 fn parse(response: String) -> Result<ServerState> {
 	let raw_state: RawExtractGlobal = RawExtractGlobal::extract_from_str(&response)?;
-	println!("{:#?}", raw_state);
 
-	todo!("finish parsing state")
+	Ok(ServerState {
+		timestamp: Instant::now(),
+		map: raw_state.map,
+		time_elapsed: raw_state.time_elapsed,
+		time_remaining: raw_state.time_remaining,
+		wave: raw_state.wave,
+		wave_max: raw_state.wave_max,
+		monsters_total: raw_state.monsters_total,
+		monsters_dead: raw_state.monsters_dead,
+		monsters_pending: raw_state.monsters_pending,
+		players: raw_state
+			.players
+			.into_iter() // @Note: into_iter *consumes*, and iter() *borrows*
+			.map(|raw_player| Player {
+				name: raw_player.name,
+				key: raw_player.key,
+				perk: raw_player.perk,
+				level: raw_player.level.parse().unwrap_or(0),
+				health: raw_player.health.parse().unwrap_or(0),
+				health_max: raw_player.health_max.parse().unwrap_or(0),
+				dosh: raw_player.dosh.parse().unwrap_or(0),
+				kills: raw_player.kills.parse().unwrap_or(0),
+				deaths: raw_player.deaths.parse().unwrap_or(0),
+				starttime: raw_player.starttime.parse().unwrap_or(0),
+				admin: if raw_player.admin == "Yes" {
+					true
+				} else {
+					false
+				},
+				spectator: if raw_player.spectator == "Yes" {
+					true
+				} else {
+					false
+				},
+				ping: raw_player.ping.parse().unwrap_or(0),
+				packetloss: raw_player.packetloss,
+			})
+			.collect::<Vec<Player>>(),
+	})
 }
 
 pub async fn fetch_infos(config: &ServerConfig) -> Result<ServerState> {

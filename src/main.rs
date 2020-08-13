@@ -15,7 +15,7 @@ async fn main() -> Result<(), Error> {
 	let last_state = api::fetch_infos(&config).await?;
 
 	println!("{}", now.elapsed().as_millis());
-	println!("{:?}", last_state);
+	println!("{:#?}", last_state);
 
 	Ok(())
 }
