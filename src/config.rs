@@ -2,19 +2,6 @@ use anyhow::{anyhow, Error};
 use serde::Deserialize;
 use std::fs;
 
-// enum Perks {
-// 	Berserker,
-// 	Survivalist,
-// 	Commando,
-// 	Support,
-// 	FieldMedic,
-// 	Demolitionist,
-// 	Firebug,
-// 	Gunslinger,
-// 	Sharpshooter,
-// 	SWAT,
-// }
-
 // enum Actions {
 // 	Kick,
 // 	SessionBan,

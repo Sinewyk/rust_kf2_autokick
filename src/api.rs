@@ -7,35 +7,50 @@ use reqwest::Client;
 use std::time::Instant;
 
 #[derive(Debug)]
-struct Player {
-	name: String,
-	key: String,
-	perk: String,
-	level: usize,
-	health: usize,
-	health_max: usize,
-	dosh: usize,
-	kills: usize,
-	admin: bool,
-	spectator: bool,
-	ping: usize,
-	packetloss: String,
-	starttime: usize,
-	deaths: usize,
+pub enum Perk {
+	Berserker,
+	Survivalist,
+	Commando,
+	Support,
+	FieldMedic,
+	Demolitionist,
+	Firebug,
+	Gunslinger,
+	Sharpshooter,
+	SWAT,
+	Unknown,
+}
+
+#[derive(Debug)]
+pub struct Player {
+	pub name: String,
+	pub key: String,
+	pub perk: Perk,
+	pub level: usize,
+	pub health: usize,
+	pub health_max: usize,
+	pub dosh: usize,
+	pub kills: usize,
+	pub admin: bool,
+	pub spectator: bool,
+	pub ping: usize,
+	pub packetloss: String,
+	pub starttime: usize,
+	pub deaths: usize,
 }
 
 #[derive(Debug)]
 pub struct ServerState {
-	timestamp: Instant,
-	map: String,
-	time_elapsed: usize,
-	time_remaining: usize,
-	wave: usize,
-	wave_max: usize,
-	monsters_total: usize,
-	monsters_dead: isize,
-	monsters_pending: isize,
-	players: Vec<Player>,
+	pub timestamp: Instant,
+	pub map: String,
+	pub time_elapsed: usize,
+	pub time_remaining: usize,
+	pub wave: usize,
+	pub wave_max: usize,
+	pub monsters_total: usize,
+	pub monsters_dead: isize,
+	pub monsters_pending: isize,
+	pub players: Vec<Player>,
 }
 
 html_extractor! {
@@ -87,7 +102,19 @@ fn parse(response: String) -> Result<ServerState> {
 			.map(|raw_player| Player {
 				name: raw_player.name,
 				key: raw_player.key,
-				perk: raw_player.perk,
+				perk: match raw_player.perk.as_ref() {
+					"KFPerk_Berserker" => Perk::Berserker,
+					"KFPerk_Commando" => Perk::Commando,
+					"KFPerk_Demolitionist" => Perk::Demolitionist,
+					"KFPerk_FieldMedic" => Perk::FieldMedic,
+					"KFPerk_Firebug" => Perk::Firebug,
+					"KFPerk_Gunslinger" => Perk::Gunslinger,
+					"KFPerk_Sharpshooter" => Perk::Sharpshooter,
+					"KFPerk_Support" => Perk::Support,
+					"KFPerk_Survivalist" => Perk::Survivalist,
+					"KFPerk_SWAT" => Perk::SWAT,
+					_ => Perk::Unknown, // This should mean that the user didn't finish loading yet
+				},
 				level: raw_player.level.parse().unwrap_or(0),
 				health: raw_player.health.parse().unwrap_or(0),
 				health_max: raw_player.health_max.parse().unwrap_or(0),
