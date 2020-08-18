@@ -21,6 +21,30 @@ pub enum Perk {
 	Unknown,
 }
 
+fn parse_perk_string(perk_string: &str) -> Perk {
+	match perk_string {
+		"KFPerk_Berserker" => Perk::Berserker,
+		"KFPerk_Commando" => Perk::Commando,
+		"KFPerk_Demolitionist" => Perk::Demolitionist,
+		"KFPerk_FieldMedic" => Perk::FieldMedic,
+		"KFPerk_Firebug" => Perk::Firebug,
+		"KFPerk_Gunslinger" => Perk::Gunslinger,
+		"KFPerk_Sharpshooter" => Perk::Sharpshooter,
+		"KFPerk_Support" => Perk::Support,
+		"KFPerk_Survivalist" => Perk::Survivalist,
+		"KFPerk_SWAT" => Perk::SWAT,
+		_ => Perk::Unknown, // This should mean that the user didn't finish loading yet
+	}
+}
+
+fn parse_boolean_string(bool_string: &str) -> bool {
+	if bool_string == "true" {
+		true
+	} else {
+		false
+	}
+}
+
 #[derive(Debug)]
 pub struct Player {
 	pub name: String,
@@ -83,7 +107,7 @@ html_extractor! {
 	}
 }
 
-fn parse(response: String) -> Result<ServerState> {
+pub fn parse_infos(response: String) -> Result<ServerState> {
 	let raw_state: RawExtractGlobal = RawExtractGlobal::extract_from_str(&response)?;
 
 	Ok(ServerState {
@@ -102,19 +126,7 @@ fn parse(response: String) -> Result<ServerState> {
 			.map(|raw_player| Player {
 				name: raw_player.name,
 				key: raw_player.key,
-				perk: match raw_player.perk.as_ref() {
-					"KFPerk_Berserker" => Perk::Berserker,
-					"KFPerk_Commando" => Perk::Commando,
-					"KFPerk_Demolitionist" => Perk::Demolitionist,
-					"KFPerk_FieldMedic" => Perk::FieldMedic,
-					"KFPerk_Firebug" => Perk::Firebug,
-					"KFPerk_Gunslinger" => Perk::Gunslinger,
-					"KFPerk_Sharpshooter" => Perk::Sharpshooter,
-					"KFPerk_Support" => Perk::Support,
-					"KFPerk_Survivalist" => Perk::Survivalist,
-					"KFPerk_SWAT" => Perk::SWAT,
-					_ => Perk::Unknown, // This should mean that the user didn't finish loading yet
-				},
+				perk: parse_perk_string(&raw_player.perk),
 				level: raw_player.level.parse().unwrap_or(0),
 				health: raw_player.health.parse().unwrap_or(0),
 				health_max: raw_player.health_max.parse().unwrap_or(0),
@@ -122,16 +134,8 @@ fn parse(response: String) -> Result<ServerState> {
 				kills: raw_player.kills.parse().unwrap_or(0),
 				deaths: raw_player.deaths.parse().unwrap_or(0),
 				starttime: raw_player.starttime.parse().unwrap_or(0),
-				admin: if raw_player.admin == "Yes" {
-					true
-				} else {
-					false
-				},
-				spectator: if raw_player.spectator == "Yes" {
-					true
-				} else {
-					false
-				},
+				admin: parse_boolean_string(&raw_player.admin),
+				spectator: parse_boolean_string(&raw_player.spectator),
 				ping: raw_player.ping.parse().unwrap_or(0),
 				packetloss: raw_player.packetloss,
 			})
@@ -139,7 +143,7 @@ fn parse(response: String) -> Result<ServerState> {
 	})
 }
 
-pub async fn fetch_infos(config: &ServerConfig) -> Result<ServerState> {
+pub async fn fetch_infos(config: &ServerConfig) -> Result<String> {
 	let client = Client::new();
 
 	let mut req = client.get(&format!("{}/ServerAdmin/current/info", &config.address));
@@ -150,5 +154,5 @@ pub async fn fetch_infos(config: &ServerConfig) -> Result<ServerState> {
 
 	let resp = req.send().await?.text().await?;
 
-	parse(resp)
+	Ok(resp)
 }
