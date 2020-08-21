@@ -1,8 +1,11 @@
 use anyhow::Error;
+use ctrlc;
 use std::collections::VecDeque;
 use std::env;
-use std::thread::sleep;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
 use std::{convert::TryInto, time::Duration};
+use tokio::time;
 
 mod api;
 mod config;
@@ -17,8 +20,19 @@ async fn main() -> Result<(), Error> {
 
 	let mut history: VecDeque<api::ServerState> = VecDeque::new();
 
-	loop {
+	let running = Arc::new(AtomicBool::new(true));
+	let r = running.clone();
+
+	ctrlc::set_handler(move || {
+		println!("Shutting down ...");
+		r.store(false, Ordering::SeqCst);
+	})
+	.expect("Error setting Ctrl-C handler");
+
+	while running.load(Ordering::SeqCst) {
 		let state = api::parse_infos(api::fetch_infos(&config).await?)?;
+
+		println!("{:#?}", state);
 
 		history.push_front(state);
 
@@ -26,6 +40,8 @@ async fn main() -> Result<(), Error> {
 			history.pop_back();
 		}
 
-		sleep(sleep_duration);
+		time::delay_for(sleep_duration).await;
 	}
+
+	Ok(())
 }
