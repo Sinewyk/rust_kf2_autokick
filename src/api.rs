@@ -1,41 +1,10 @@
 // @NOTE (sinewyk): the piece that I was missing, you declare mod once (the first time needed, here in main),
 // and then the "crate" is aware of it, so, start from the crate (or super) =)
-use crate::config::ServerConfig;
+use crate::config::{Perk, ServerConfig};
 use anyhow::Result;
 use html_extractor::{html_extractor, HtmlExtractor};
 use reqwest::Client;
 use std::time::Instant;
-
-#[derive(Debug)]
-pub enum Perk {
-	Berserker,
-	Survivalist,
-	Commando,
-	Support,
-	FieldMedic,
-	Demolitionist,
-	Firebug,
-	Gunslinger,
-	Sharpshooter,
-	SWAT,
-	Unknown,
-}
-
-fn parse_perk_string(perk_string: &str) -> Perk {
-	match perk_string {
-		"KFPerk_Berserker" => Perk::Berserker,
-		"KFPerk_Commando" => Perk::Commando,
-		"KFPerk_Demolitionist" => Perk::Demolitionist,
-		"KFPerk_FieldMedic" => Perk::FieldMedic,
-		"KFPerk_Firebug" => Perk::Firebug,
-		"KFPerk_Gunslinger" => Perk::Gunslinger,
-		"KFPerk_Sharpshooter" => Perk::Sharpshooter,
-		"KFPerk_Support" => Perk::Support,
-		"KFPerk_Survivalist" => Perk::Survivalist,
-		"KFPerk_SWAT" => Perk::SWAT,
-		_ => Perk::Unknown, // This should mean that the user didn't finish loading yet
-	}
-}
 
 fn parse_boolean_string(bool_string: &str) -> bool {
 	if bool_string == "true" {
@@ -126,7 +95,7 @@ pub fn parse_infos(response: String) -> Result<ServerState> {
 			.map(|raw_player| Player {
 				name: raw_player.name,
 				key: raw_player.key,
-				perk: parse_perk_string(&raw_player.perk),
+				perk: Perk::from(&raw_player.perk),
 				level: raw_player.level.parse().unwrap_or(0),
 				health: raw_player.health.parse().unwrap_or(0),
 				health_max: raw_player.health_max.parse().unwrap_or(0),

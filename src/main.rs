@@ -1,20 +1,19 @@
+mod api;
+mod config;
+
 use anyhow::Error;
+use config::ServerConfig;
 use ctrlc;
 use std::collections::VecDeque;
-use std::env;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::{convert::TryInto, time::Duration};
 use tokio::time;
 
-mod api;
-mod config;
-
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-	let args: Vec<String> = env::args().collect();
+	let config = ServerConfig::new()?;
 
-	let config = config::get_config(&args)?;
 	let sleep_duration =
 		Duration::from_millis(config.interval_check.unwrap_or(5000).try_into().unwrap());
 
