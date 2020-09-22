@@ -66,6 +66,9 @@ pub struct ServerConfig {
 	pub log: Option<bool>,
 }
 
+const NO_RULES_ERR: &str =
+	"You didn't actually provide any rules (neither level nor forbidden perks)";
+
 impl ServerConfig {
 	pub fn new() -> Result<ServerConfig, Error> {
 		let args: Vec<String> = env::args().collect();
@@ -76,6 +79,19 @@ impl ServerConfig {
 
 		let path = &args[1];
 
-		Ok(serde_json::from_str(&fs::read_to_string(path)?)?)
+		let config: ServerConfig = serde_json::from_str(&fs::read_to_string(path)?)?;
+
+		if let None = &config.minimum_level {
+			if let Some(perks) = &config.remove_perks {
+				if perks.len() == 0 {
+					return Err(anyhow!(NO_RULES_ERR));
+				}
+			}
+			if let None = &config.remove_perks {
+				return Err(anyhow!(NO_RULES_ERR));
+			}
+		}
+
+		Ok(config)
 	}
 }

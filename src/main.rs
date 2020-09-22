@@ -14,6 +14,8 @@ use tokio::time;
 async fn main() -> Result<(), Error> {
 	let config = ServerConfig::new()?;
 
+	println!("{:#?}", &config);
+
 	let sleep_duration =
 		Duration::from_millis(config.interval_check.unwrap_or(5000).try_into().unwrap());
 
