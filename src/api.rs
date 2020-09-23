@@ -32,6 +32,20 @@ pub struct Player {
 	pub deaths: usize,
 }
 
+impl Player {
+	// Ok, this api is weird (maybe ?) but a None is player is clean
+	// Some(time) is in infraction from time
+	// Some(0) "first" infraction => need to warn
+	// Some(x) x since first infraction => to check delay
+	pub fn is_in_infraction(
+		&self,
+		config: &ServerConfig,
+		history: &crate::History,
+	) -> Option<usize> {
+		Some(0)
+	}
+}
+
 #[derive(Debug)]
 pub struct ServerState {
 	pub timestamp: Instant,
