@@ -1,7 +1,7 @@
 // @NOTE (sinewyk): the piece that I was missing, you declare mod once (the first time needed, here in main),
 // and then the "crate" is aware of it, so, start from the crate (or super) =)
 use crate::config::{Perk, ServerConfig};
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use html_extractor::{html_extractor, HtmlExtractor};
 use reqwest::Client;
 use std::time::Instant;
@@ -135,7 +135,15 @@ pub async fn fetch_infos(config: &ServerConfig) -> Result<String> {
 		req = req.basic_auth(&basic_auth.0, Some(&basic_auth.1));
 	}
 
-	let resp = req.send().await?.text().await?;
+	let resp = req.send().await?;
 
-	Ok(resp)
+	let status = resp.status();
+
+	if status != 200 {
+		return Err(anyhow!("Wrong infos status, currently {}", status));
+	}
+
+	let text = resp.text().await?;
+
+	Ok(text)
 }

@@ -33,7 +33,15 @@ async fn main() -> Result<(), Error> {
 	.expect("Error setting Ctrl-C handler");
 
 	while running.load(Ordering::SeqCst) {
-		let state = api::parse_infos(api::fetch_infos(&config).await?)?;
+		let infos = match api::fetch_infos(&config).await {
+			Ok(infos) => infos,
+			Err(err) => {
+				println!("{}", err);
+				time::delay_for(sleep_duration).await;
+				continue;
+			}
+		};
+		let state = api::parse_infos(infos)?;
 
 		println!("{:#?}", state);
 
